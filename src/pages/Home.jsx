@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+ // Ensure to create and include the CSS file for styling
 
 function Home() {
   const [task, setTask] = useState('');
@@ -12,7 +12,7 @@ function Home() {
 
   // Add task to "To-Do" section
   const addTask = () => {
-    if (task.trim() !== '') {
+    if (task.trim() !== '' && !tasks.todo.includes(task)) {
       setTasks((prevTasks) => ({
         ...prevTasks,
         todo: [...prevTasks.todo, task],
@@ -24,9 +24,7 @@ function Home() {
   // Move task to another category
   const moveTask = (currentCategory, targetCategory, taskToMove) => {
     setTasks((prevTasks) => {
-      const updatedCurrent = prevTasks[currentCategory].filter(
-        (t) => t !== taskToMove
-      );
+      const updatedCurrent = prevTasks[currentCategory].filter((t) => t !== taskToMove);
       const updatedTarget = [...prevTasks[targetCategory], taskToMove];
       return { ...prevTasks, [currentCategory]: updatedCurrent, [targetCategory]: updatedTarget };
     });
@@ -39,6 +37,45 @@ function Home() {
       return { ...prevTasks, [category]: updatedCategory };
     });
   };
+
+  // Clear all tasks in a category
+  const clearAll = (category) => {
+    setTasks((prevTasks) => ({
+      ...prevTasks,
+      [category]: [],
+    }));
+  };
+
+  // Task section component
+  const TaskSection = ({ title, category, moveTask, deleteTask, clearAll }) => (
+    <div className={`task-section ${category}`}>
+      <div className="task-section-header">
+        <h2>{title}</h2>
+        <button className="clear-all-button" onClick={() => clearAll(category)}>
+          Clear All
+        </button>
+      </div>
+      <ul>
+        {tasks[category].map((t, index) => (
+          <li key={index} className="task-item">
+            {t}
+            <div className="task-buttons">
+              {category !== 'todo' && (
+                <button onClick={() => moveTask(category, 'todo', t)}>To-Do</button>
+              )}
+              {category !== 'ongoing' && (
+                <button onClick={() => moveTask(category, 'ongoing', t)}>Ongoing</button>
+              )}
+              {category !== 'completed' && (
+                <button onClick={() => moveTask(category, 'completed', t)}>Completed</button>
+              )}
+              <button onClick={() => deleteTask(category, t)}>Delete</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 
   return (
     <div className="home">
@@ -56,107 +93,33 @@ function Home() {
           value={task}
           onChange={handleInputChange}
         />
-        <button type="button" className="add-task-button" onClick={addTask}>
+        <button type="submit" className="add-task-button">
           ADD TASK
         </button>
       </form>
 
       <div className="task-sections">
-        {/* To-Do Section */}
-        <div className="task-section">
-          <h2>To-Do Tasks</h2>
-          <ul>
-            {tasks.todo.map((t, index) => (
-              <li key={index}>
-                {t}
-                <div>
-                  <button
-                    className="move_to_ongoing"
-                    onClick={() => moveTask('todo', 'ongoing', t)}
-                  >
-                    Ongoing
-                  </button>
-                  <button
-                    className="move_to_completed"
-                    onClick={() => moveTask('todo', 'completed', t)}
-                  >
-                    Completed
-                  </button>
-                  <button
-                    className="delete-task-button"
-                    onClick={() => deleteTask('todo', t)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Ongoing Section */}
-        <div className="task-section">
-          <h2>Ongoing Tasks</h2>
-          <ul>
-            {tasks.ongoing.map((t, index) => (
-              <li key={index}>
-                {t}
-                <div>
-                  <button
-                    className="move_to_ongoing"
-                    onClick={() => moveTask('ongoing', 'todo', t)}
-                  >
-                    To-Do
-                  </button>
-                  <button
-                    className="move_to_completed"
-                    onClick={() => moveTask('ongoing', 'completed', t)}
-                  >
-                    Completed
-                  </button>
-                  <button
-                    className="delete-task-button"
-                    onClick={() => deleteTask('ongoing', t)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Completed Section */}
-        <div className="task-section">
-          <h2>Completed Tasks</h2>
-          <ul>
-            {tasks.completed.map((t, index) => (
-              <li key={index}>
-                {t}
-                <div>
-                  <button
-                    className="move_to_ongoing"
-                    onClick={() => moveTask('completed', 'todo', t)}
-                  >
-                    To-Do
-                  </button>
-                  <button
-                    className="move_to_completed"
-                    onClick={() => moveTask('completed', 'ongoing', t)}
-                  >
-                    Ongoing
-                  </button>
-                  <button
-                    className="delete-task-button"
-                    onClick={() => deleteTask('completed', t)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <TaskSection
+          title="To-Do Tasks"
+          category="todo"
+          moveTask={moveTask}
+          deleteTask={deleteTask}
+          clearAll={clearAll}
+        />
+        <TaskSection
+          title="Ongoing Tasks"
+          category="ongoing"
+          moveTask={moveTask}
+          deleteTask={deleteTask}
+          clearAll={clearAll}
+        />
+        <TaskSection
+          title="Completed Tasks"
+          category="completed"
+          moveTask={moveTask}
+          deleteTask={deleteTask}
+          clearAll={clearAll}
+        />
       </div>
     </div>
   );
